@@ -114,11 +114,36 @@ const updateStatus = asyncHandler(async (req, res) => {
   if (!allowed.includes(status)) {
     throw new AppError(`الحالة يجب أن تكون إحدى: ${allowed.join(', ')}`, 400, 'VALIDATION_ERROR');
   }
+
+  // الإلغاء ليس مجرّد تغيير حالة: هو معاملة ذرّية تُعيد المخزون المخصوم
+  // (عكس place_order) عبر cancel_order، وهي idempotent (لا تُعيد مرّتين).
+  if (status === 'cancelled') {
+    try {
+      const row = await withTransaction(async (client) => {
+        await client.query('SELECT cancel_order($1)', [req.params.id]);
+        const r = await client.query('SELECT id, status FROM orders WHERE id = $1', [req.params.id]);
+        return r.rows[0];
+      });
+      return res.json({ success: true, data: row });
+    } catch (err) {
+      if ((err.message || '').includes('ORDER_NOT_FOUND')) {
+        throw new AppError('الطلب غير موجود', 404, 'ORDER_NOT_FOUND');
+      }
+      throw err;
+    }
+  }
+
+  // للحالات الأخرى: منع تغيير طلب مُلغى (حالة نهائية تحفظ اتساق المخزون)
+  const cur = await query(`SELECT status FROM orders WHERE id = $1`, [req.params.id]);
+  if (!cur.rows[0]) throw new AppError('الطلب غير موجود', 404, 'ORDER_NOT_FOUND');
+  if (cur.rows[0].status === 'cancelled') {
+    throw new AppError('لا يمكن تغيير حالة طلب مُلغى', 409, 'INVALID_TRANSITION');
+  }
+
   const result = await query(
     `UPDATE orders SET status = $1 WHERE id = $2 RETURNING id, status`,
     [status, req.params.id]
   );
-  if (!result.rows[0]) throw new AppError('الطلب غير موجود', 404, 'ORDER_NOT_FOUND');
   res.json({ success: true, data: result.rows[0] });
 });
 

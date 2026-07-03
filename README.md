@@ -1,4 +1,4 @@
-# نظام متجر إلكتروني — إدارة المخزون والطلبات مع معاملات موزّعة (ACID)
+# نظام متجر إلكتروني — إدارة المخزون والطلبات بمعاملة ذرّية (ACID)
 
 [![CI](https://github.com/ABOODE39/ecommerce-inventory-acid/actions/workflows/ci.yml/badge.svg)](https://github.com/ABOODE39/ecommerce-inventory-acid/actions)
 

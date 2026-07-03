@@ -1,6 +1,6 @@
 -- =====================================================================
 --  01_schema.sql — مخطّط قاعدة بيانات المتجر الإلكتروني
---  نظام: إدارة المخزون والطلبات مع معاملات موزّعة (ACID)
+--  نظام: إدارة المخزون والطلبات بمعاملة ذرّية (ACID)
 --  جامعة آشور — قسم هندسة الأمن السيبراني — المرحلة الثانية
 --  المكدّس: PostgreSQL 16
 -- =====================================================================
@@ -84,7 +84,7 @@ CREATE INDEX idx_products_active   ON products(is_active);
 -- =====================================================================
 CREATE TABLE customers (
     id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id    UUID REFERENCES users(id),    -- اختياري: ربط بحساب دخول
+    user_id    UUID UNIQUE REFERENCES users(id), -- اختياري: ربط 1:1 بحساب دخول (UNIQUE يسمح بعدّة NULL)
     full_name  VARCHAR(120) NOT NULL,
     email      VARCHAR(120) NOT NULL UNIQUE,
     phone      VARCHAR(30),

@@ -130,3 +130,50 @@ $$;
 
 COMMENT ON FUNCTION place_order(UUID, JSONB, VARCHAR) IS
   'معاملة طلب ذرّية (ACID): فحص المخزون + خصمه + إنشاء الطلب وأسطره والدفعة معاً. تُلغى بالكامل عند أي فشل.';
+
+
+-- =====================================================================
+--  cancel_order — إلغاء الطلب ذرّياً مع إعادة المخزون (عكس place_order)
+-- =====================================================================
+--  الإلغاء أيضاً معاملة ذرّية: تُعاد كميات كل أسطر الطلب إلى مخزون
+--  منتجاتها ثم تُضبط حالة الطلب إلى "cancelled" — كلّها معاً. الدالة
+--  idempotent: إن كان الطلب مُلغى أصلاً لا تُعيد المخزون مرّتين. هذا
+--  يحفظ الاتساق المحاسبي للمخزون (Consistency) بعد الإلغاء.
+-- ---------------------------------------------------------------------
+DROP FUNCTION IF EXISTS cancel_order(UUID);
+
+CREATE OR REPLACE FUNCTION cancel_order(p_order_id UUID)
+RETURNS VOID
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_status VARCHAR;
+    v_item   RECORD;
+BEGIN
+    -- قفل رأس الطلب طوال المعاملة (Isolation)
+    SELECT status INTO v_status FROM orders WHERE id = p_order_id FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'ORDER_NOT_FOUND: الطلب % غير موجود', p_order_id;
+    END IF;
+
+    -- idempotent: طلب مُلغى مسبقاً → لا نُعيد المخزون مرّتين
+    IF v_status = 'cancelled' THEN
+        RETURN;
+    END IF;
+
+    -- إعادة كمية كل سطر إلى مخزون منتجه (قفل صفوف المنتجات)
+    FOR v_item IN
+        SELECT product_id, quantity FROM order_items WHERE order_id = p_order_id
+    LOOP
+        UPDATE products
+           SET stock = stock + v_item.quantity
+         WHERE id = v_item.product_id;
+    END LOOP;
+
+    -- ضبط حالة الطلب إلى مُلغى — جزء من نفس المعاملة الذرّية
+    UPDATE orders SET status = 'cancelled' WHERE id = p_order_id;
+END;
+$$;
+
+COMMENT ON FUNCTION cancel_order(UUID) IS
+  'إلغاء طلب ذرّياً: إعادة كل الكميات إلى المخزون + ضبط الحالة cancelled معاً (idempotent).';

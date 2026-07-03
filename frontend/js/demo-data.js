@@ -232,6 +232,15 @@
       var o2 = ORDERS.find(x => x.id === statusMatch[1]);
       if (!o2) err('الطلب غير موجود', 404);
       if (['pending','paid','shipped','cancelled'].indexOf(body.status) < 0) err('حالة غير صالحة', 400);
+      // منع تغيير طلب مُلغى (حالة نهائية تحفظ اتساق المخزون)
+      if (o2.status === 'cancelled' && body.status !== 'cancelled') err('لا يمكن تغيير حالة طلب مُلغى', 409);
+      // الإلغاء يُعيد المخزون المخصوم ذرّياً (idempotent) — مطابقةً لدالة cancel_order
+      if (body.status === 'cancelled' && o2.status !== 'cancelled') {
+        ORDER_ITEMS.filter(function (i) { return i.order_id === o2.id; }).forEach(function (i) {
+          var p = PRODUCTS.find(function (x) { return x.id === i.product_id; });
+          if (p) p.stock += i.quantity;   // إعادة الكمية إلى مخزون منتجها
+        });
+      }
       o2.status = body.status;
       return { success: true, data: { id: o2.id, status: o2.status } };
     }
