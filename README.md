@@ -1,6 +1,8 @@
 # نظام متجر إلكتروني — إدارة المخزون والطلبات بمعاملة ذرّية (ACID)
 
-[![CI](https://github.com/ABOODE39/ecommerce-inventory-acid/actions/workflows/ci.yml/badge.svg)](https://github.com/ABOODE39/ecommerce-inventory-acid/actions)
+[![CI](https://github.com/ABOODE39/ecommerce-inventory-acid/actions/workflows/ci.yml/badge.svg)](https://github.com/ABOODE39/ecommerce-inventory-acid/actions) [![Live Demo](https://img.shields.io/badge/Live%20Demo-aboode39.github.io-F97316?style=flat-square&logo=github)](https://aboode39.github.io/ecommerce-inventory-acid/)
+
+> **🔗 العرض الحيّ (Online): <https://aboode39.github.io/ecommerce-inventory-acid/>**
 
 مشروع مادة قواعد البيانات: نظام متجر إلكتروني بسيط يدير المنتجات والمخزون والطلبات. **الفكرة المحورية** أنّ إنشاء أي طلب يجري داخل **معاملة ذرّية (ACID Transaction)**: تُفحَص كمية المخزون أولاً، ثم تُخصَم ويُنشأ الطلب وأسطره والدفعة **كلّها معاً**؛ وإن نقص المخزون عن المطلوب يُلغى كل شيء (ROLLBACK) فلا يُخصَم مخزون ولا يُنشأ طلب نصفه منفَّذ.
 
