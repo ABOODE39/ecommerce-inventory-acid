@@ -14,11 +14,11 @@
 
 ## الفريق
 
-| العضو | الكروب |
+| العضو | القاعة |
 |------|--------|
-| عبدالله علي نائل حسن | D |
+| حيدر اركان حسين | B |
 | يوسف اياد مجيد | G |
-| ذو الفقار اسعد حميد | C |
+| حسين علي شهاب | B |
 
 - **الجامعة:** جامعة آشور — قسم هندسة الأمن السيبراني — المرحلة الثانية
 - **المشرف:** د. علي
@@ -117,5 +117,5 @@ A simple **e-commerce inventory & orders** system whose core feature is an **ACI
 
 - **Stack:** PostgreSQL 16 + Node.js/Express (JWT + bcrypt + simple RBAC) + vanilla Arabic RTL frontend with a browser **Demo Mode** for GitHub Pages.
 - **Tests:** Jest + Supertest (25 tests) including a rollback test on insufficient stock.
-- **Team:** Abdullah Ali Nael Hassan (Group D), Yousif Ayad Majeed (Group G), Dhul-Fiqar Asaad Hameed (Group C) — Ashur University, Cybersecurity Engineering Dept., Stage 2. Supervisor: Dr. Ali.
+- **Team:** Haidar Arkan Hussein (Hall B), Yousif Ayad Majeed (Hall G), Hussein Ali Shihab (Hall B) — Ashur University, Cybersecurity Engineering Dept., Stage 2. Supervisor: Dr. Ali.
 - **License:** MIT.
